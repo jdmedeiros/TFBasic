@@ -1,3 +1,8 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# OPTIONAL PARAMETERS
+# Default is to create a security group in the default VPC allowing total access to 127.0.0.1/32. Not very useful.
+# ---------------------------------------------------------------------------------------------------------------------
+
 # VPC id for the security group
 variable "vpc_id" {
   type    = string
@@ -33,22 +38,3 @@ variable "ingress_ip_list" {
     ["127.0.0.1/32"],
   ]
 }
-
-variable "security_group_bucket_name" {
-  description = "The name of the S3 bucket to store the state."
-  type        = string
-  default     = ""
-}
-
-variable "security_group_bucket_key_name" {
-  description = "The name of the S3 bucket folder to store the state."
-  type        = string
-  default     = ""
-}
-
-variable "dynamodb_table_name" {
-  description = "The name of the DynamoDB table. Must be unique in this AWS account."
-  type        = string
-  default     = ""
-}
-
