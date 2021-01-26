@@ -1,27 +1,46 @@
 module "vpc" {
-  source = "../../modules/vpc"
-  vpc_cidr_block = var.vpc_cidr_block
-  top_cidr_block = var.top_cidr_block
-  bottom_cidr_block = var.bottom_cidr_block
-  vpc_bucket_name = var.bucket_name
-  vpc_bucket_key_name = "env-production/server/vpc"
-  dynamodb_table_name = var.dynamodb_table_name
+  source = "terraform-aws-modules/vpc/aws"
+
+  name = var.vpc_name
+  cidr = var.vpc_cidr_block
+
+  azs             = ["us-east-1a"]
+  private_subnets = var.private_subnets
+  public_subnets  = var.public_subnets
+
+  enable_nat_gateway = false
+  enable_vpn_gateway = false
+
+  tags = {
+    Terraform = "true"
+    Environment = "prod"
+  }
 }
+
+#module "vpc" {
+#  source = "../../modules/vpc"
+#  vpc_cidr_block = var.vpc_cidr_block
+#  top_cidr_block = var.top_cidr_block
+#  bottom_cidr_block = var.bottom_cidr_block
+#  vpc_bucket_name = var.bucket_name
+#  vpc_bucket_key_name = "env-production/server/vpc"
+#  dynamodb_table_name = var.dynamodb_table_name
+#}
 
 module "security_group" {
   source = "../../modules/security_group"
   security_group_name = "Server security group"
-  security_group_bucket_name = var.bucket_name
-  security_group_bucket_key_name = "env-production/server/server_security_group"
-  dynamodb_table_name = var.dynamodb_table_name
+#  security_group_bucket_name = var.bucket_name
+#  security_group_bucket_key_name = "env-production/server/server_security_group"
+#  dynamodb_table_name = var.dynamodb_table_name
   ingress_fw_rules = var.ingress_fw_rules
   ingress_ip_list = var.ingress_ip_list
-  vpc_id = module.vpc.aws_vpc_main_id
+  vpc_id = module.vpc.vpc_id
 }
 
 
 resource "aws_network_interface" "server_top" {
-  description = "Primary network interface"
+  description = "Primary network iterface"
   private_ip = var.top_server_instance_private_ip
   private_ips = [
     var.top_server_instance_private_ip,
@@ -29,8 +48,11 @@ resource "aws_network_interface" "server_top" {
   security_groups = [
     module.security_group.aws_security_group_id,
   ]
-  subnet_id = module.vpc.aws_subnet_top_id
+  subnet_id = module.vpc.public_subnets[0]
   source_dest_check = false
+  tags = {
+    name = "nic0"
+  }
 }
 
 resource "aws_network_interface" "server_bottom" {
@@ -42,8 +64,11 @@ resource "aws_network_interface" "server_bottom" {
   security_groups = [
     module.security_group.aws_security_group_id,
   ]
-  subnet_id = module.vpc.aws_subnet_bottom_id
+  subnet_id = module.vpc.private_subnets[0]
   source_dest_check = false
+  tags = {
+    name = "nic1"
+  }
 }
 
 resource "aws_instance" "instance0" {

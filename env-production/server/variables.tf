@@ -63,16 +63,20 @@ variable "dynamodb_table_name" {
   default     = "jdmedeiros-tfprojects-tfstate-lock"
 }
 
+variable "vpc_name" {
+  default = "grsi"
+}
+
 variable "vpc_cidr_block" {
   default = "172.26.0.0/16"
 }
 
-variable "top_cidr_block" {
-  default = "172.26.0.0/24"
+variable "public_subnets" {
+  default = ["172.26.0.0/24"]
 }
 
-variable "bottom_cidr_block" {
-  default = "172.26.1.0/24"
+variable "private_subnets" {
+  default = ["172.26.1.0/24"]
 }
 
 
